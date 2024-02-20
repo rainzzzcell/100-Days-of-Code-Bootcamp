@@ -1,0 +1,61 @@
+from art import logo, vs
+from game_data import data
+from replit import clear
+import random
+
+def get_random_thing():
+  return random.choice(data)
+
+def format_data(thing):
+  new_name = thing["name"]
+  new_description = thing["description"]
+  new_country = thing["country"]
+  return f"{new_name}, a {new_description}, from{new_country}"
+
+
+
+def game():
+  print(logo)
+  score = 0 
+  game_will_continue = True
+  while game_will_continue:
+    thing_a = get_random_thing()
+    thing_b = get_random_thing()
+    if thing_a == thing_b:
+      thing_b = get_random_thing()
+    elif thing_a != thing_b:
+      print(f"Compare A: {format_data(thing_a)}.")
+      print(f"Compare B: {format_data(thing_b)}.")
+      guess = input("Who has more followers? Type 'A' or 'B':")
+
+      follower_a = thing_a["follower_count"]
+      follower_b = thing_b["follower_count"]
+      clear()
+      
+      if guess == "A": 
+        if follower_a > follower_b:
+          score += 1
+          print(f"You're right! Current score: {score}.")
+          
+        else:
+          game_will_continue = False
+          print(f"Sorry, that's wrong. Final score: {score}")
+          
+      elif guess == "B":
+        if follower_b > follower_a:
+          score += 1
+          print(f"You're right! Current score: {score}.")
+          
+        else:
+          game_will_continue = False
+          print(f"Sorry, that's wrong. Final score: {score}")
+          
+      else:
+        print("Invalid input. Please try again.")
+        game()
+game()
+
+        
+      
+      
+  
