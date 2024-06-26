@@ -1,0 +1,38 @@
+from tkinter import *
+
+# Function to convert miles to kilometers
+def miles_to_km():
+    miles = float(entry.get())
+    km = miles * 1.609
+    result.config(text=f"{km:.2f}")
+
+# Create the main window
+window = Tk()
+window.title("First GUI Program")
+window.minsize(width=500, height=300)
+
+# First label
+miles_label = Label(window, text="Miles", font=("Arial", 12))
+miles_label.grid(column=3, row=1)
+
+# Second label
+equal_label = Label(window, text="is equal to", font=("Arial", 12))
+equal_label.grid(column=1, row=2)
+
+# Third label
+km_label = Label(window, text="Km", font=("Arial", 12))
+km_label.grid(column=3, row=2)
+
+# Output label
+result = Label(window, text="0", font=("Arial", 12))
+result.grid(column=2, row=2)
+
+# Button
+button = Button(window, text="Calculate", command=miles_to_km)
+button.grid(column=2, row=3)
+
+# Create an input entry
+entry = Entry(window, width=10)
+entry.grid(column=2, row=1)
+
+window.mainloop()
