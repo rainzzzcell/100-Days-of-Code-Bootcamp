@@ -1,42 +1,51 @@
-import time
-from turtle import Screen
-from player import Player
-from car_manager import CarManager
-from scoreboard import Scoreboard
+from tkinter import *
+import requests
 
-#screen
-screen = Screen()
-screen.setup(width=600, height=600)
-screen.tracer(0)
-
-#Objects
-player = Player()
-car_manager = CarManager()
-scoreboard = Scoreboard()
-
-#Controller
-screen.listen()
-screen.onkey(player.go_up,"Up")
+def get_quote():
+    response = requests.get('https://api.kanye.rest')
+    response.raise_for_status()
+    data = response.json()
+    quote = data["quote"]
+    canvas.itemconfig(quote_text,text = quote)
 
 
-game_is_on = True
-while game_is_on:
-    time.sleep(0.1)
-    screen.update()
 
-    #car creation
-    car_manager.create_car()
-    car_manager.move_cars()
+window = Tk()
+window.title("Kanye Says...")
+window.config(padx=50, pady=50)
 
-    #faliure
-    for car in car_manager.all_cars:
-        if car.distance(player) < 20:
-            game_is_on = False
-            scoreboard.game_over()
+canvas = Canvas(width=300, height=414)
+background_img = PhotoImage(file="background.png")
+canvas.create_image(150, 207, image=background_img)
+quote_text = canvas.create_text(150, 207, text="Kanye Quote Goes HERE", width=250, font=("Arial", 30, "bold"), fill="white")
+canvas.grid(row=0, column=0)
 
-    if player.at_finish():
-        player.go_to_start()
-        car_manager.level_up()
-        scoreboard.next_level()
+kanye_img = PhotoImage(file="kanye.png")
+kanye_button = Button(image=kanye_img, highlightthickness=0, command=get_quote)
+(kanye_button.grid(row=1, column=0))
 
-screen.exitonclick()
+
+
+window.mainloop()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
