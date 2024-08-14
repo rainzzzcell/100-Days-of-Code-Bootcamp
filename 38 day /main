@@ -1,0 +1,64 @@
+import requests
+from datetime import datetime
+import os
+
+# Data
+GENDER = "male"
+AGE = "23"
+
+# Date
+today = datetime.now().strftime("%d/%m/%Y")
+time_now = datetime.now().strftime("%X")
+
+# Sheet
+SHEET_NAME = "My Workouts"
+SHEET_EP = ""
+
+# Exercise API credentials
+APP_ID = ""
+API_KEY = ""
+
+# Natural language endpoint
+natural_lang_ep = "https://trackapi.nutritionix.com/v2/natural/exercise"
+query_text = input("Which exercise have you done?:")
+
+# API request headers
+headers = {
+    "x-app-id": APP_ID,
+    "x-app-key": API_KEY,
+    "Content-Type": "application/json"
+}
+
+# API request body
+data = {
+    "query": query_text,
+    "gender": GENDER,
+    "age": AGE,
+}
+
+# Making the API call
+response = requests.post(url=natural_lang_ep, json=data, headers=headers)
+result = response.json()
+
+# Print the API result to understand its structure
+print(f"Nutritionix API call result: \n{result}\n")
+
+# Loop through the exercises in the result
+if 'exercises' in result:
+    for exercise in result['exercises']:
+        sheet_data = {
+            "workout": {
+                "date": today,
+                "time": time_now,
+                "exercise": exercise["name"].title(),
+                "duration": exercise["duration_min"],
+                "calories": exercise["nf_calories"]
+            }
+        }
+
+        # Sending the data to the sheet
+        exercise_response = requests.post(SHEET_EP, json=sheet_data)
+
+        print(f"Sheety response: {exercise_response.text}")
+else:
+    print("No exercises found in the API response.")
