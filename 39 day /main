@@ -1,0 +1,24 @@
+from data_manager import DataManager
+
+# Initialize DataManager and get data from the Google Sheet
+data_manager = DataManager()
+sheet_data = data_manager.get_destination_data()
+
+# Ensure sheet_data is not empty
+if sheet_data:
+    # Check if the "iataCode" key is missing or empty for any entry
+    from flight_search import FlightSearch
+    flight_search = FlightSearch()
+
+    for row in sheet_data:
+        if not row.get("iataCode"):
+            # Fetch and update the IATA code for each city
+            row["iataCode"] = flight_search.get_destination_code(row["city"])
+
+    print(f"Updated sheet_data:\n {sheet_data}")
+
+    # Update the Google Sheet with the new IATA codes
+    data_manager.destination_data = sheet_data
+    data_manager.update_destination_codes()
+else:
+    print("No data found in sheet_data.")
