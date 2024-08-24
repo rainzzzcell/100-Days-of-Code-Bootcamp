@@ -1,0 +1,81 @@
+import spotipy
+from spotipy.oauth2 import SpotifyOAuth
+import requests
+from bs4 import BeautifulSoup
+
+date = input("Which year do you want to travel to? Type the date in the format YYYY-MM-DD: ")
+
+URL = "https://www.billboard.com/charts/hot-100/"
+
+
+def get_soup(url):
+    try:
+        response = requests.get(url + date)
+        response.raise_for_status()  # Check if the request was successful
+        soup = BeautifulSoup(response.text, "html.parser")
+        return soup
+    except requests.RequestException as e:
+        print(f"Error fetching data from Billboard: {e}")
+        return None
+
+
+def fetch_song_names():
+    soup = get_soup(URL)
+    if soup:
+        song_names_spans = soup.select("li ul li h3")
+        song_names = [song.getText().strip() for song in song_names_spans]
+        return song_names
+    return []
+
+
+def create_sp_playlist():
+    scope = "playlist-modify-private"
+
+    sp = spotipy.Spotify(
+        auth_manager=SpotifyOAuth(
+            scope=scope,
+            redirect_uri="http://example.com",
+            client_id="",
+            client_secret="",
+            show_dialog=True
+        )
+    )
+
+    try:
+        user_id = sp.current_user()["id"]
+    except spotipy.SpotifyException as e:
+        print(f"Error fetching user ID: {e}")
+        return
+
+    song_names = fetch_song_names()
+    if not song_names:
+        print("No song names found. Please check the date or try again.")
+        return
+
+    song_uris = []
+    year = date.split("-")[0]
+    for song in song_names:
+        try:
+            result = sp.search(q=f"track:{song} year:{year}", type="track")
+            if result["tracks"]["items"]:
+                uri = result["tracks"]["items"][0]["uri"]
+                song_uris.append(uri)
+            else:
+                print(f"{song} not found on Spotify")
+        except spotipy.SpotifyException as e:
+            print(f"Error searching for {song}: {e}")
+
+    if not song_uris:
+        print("No valid song URIs found.")
+        return
+
+    try:
+        playlist = sp.user_playlist_create(user=user_id, name=f"{date} Billboard 100", public=False)
+        sp.playlist_add_items(playlist_id=playlist["id"], items=song_uris)
+        print(f"Playlist created successfully: {playlist['external_urls']['spotify']}")
+    except spotipy.SpotifyException as e:
+        print(f"Error creating or modifying playlist: {e}")
+
+
+if __name__ == "__main__":
+    create_sp_playlist()
