@@ -1,0 +1,75 @@
+from selenium import webdriver
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.common.by import By
+from selenium.common.exceptions import NoSuchElementException
+import time
+
+my_email = ""
+my_password = ""
+url = ("https://www.linkedin.com/login")  # Start with the LinkedIn login page
+job_search_url = ("https://www.linkedin.com/jobs/search/?currentJobId=3951137317&distance=25&f_AL=true&geoId=113375341"
+                  "&keywords=data%20analyst"
+                  "&origin=JOB_SEARCH_PAGE_JOB_FILTER&refresh=true")
+phone_number = ""
+
+chrome_options = webdriver.ChromeOptions()
+chrome_options.add_experimental_option("detach", True)
+
+driver = webdriver.Chrome(options=chrome_options)
+driver.get(url)
+
+# Sign in
+time.sleep(5)
+email_field = driver.find_element(By.ID, value="username")
+email_field.send_keys(my_email)
+password_field = driver.find_element(By.ID, value="password")
+password_field.send_keys(my_password)
+password_field.send_keys(Keys.ENTER)
+
+# You may be presented with a CAPTCHA - Solve the Puzzle Manually
+input("Press Enter when you have solved the Captcha")
+
+# Once logged in, navigate to the job search page
+driver.get(job_search_url)
+
+# Select the position
+time.sleep(5)
+all_listings = driver.find_elements(by=By.CSS_SELECTOR, value=".job-card-container--clickable")
+
+# Apply for Jobs
+for listing in all_listings:
+    print("Opening Listing")
+    listing.click()
+    time.sleep(2)
+    try:
+        # Click Apply Button
+        apply_button = driver.find_element(by=By.CSS_SELECTOR, value=".jobs-s-apply button")
+        apply_button.click()
+
+        # Insert Phone Number
+        time.sleep(5)
+        phone = driver.find_element(by=By.CSS_SELECTOR, value="input[id*=phoneNumber]")
+        if phone.get_attribute("value") == "":
+            phone.send_keys(phone_number)
+
+        # Check the Submit Button
+        submit_button = driver.find_element(by=By.CSS_SELECTOR, value="footer button")
+        if submit_button.get_attribute("data-control-name") == "continue_unify":
+            print("Complex application, skipped.")
+            continue
+        else:
+            # Click Submit Button
+            print("Submitting job application")
+            submit_button.click()
+
+        time.sleep(2)
+        # Click Close Button
+        close_button = driver.find_element(by=By.CLASS_NAME, value="artdeco-modal__dismiss")
+        close_button.click()
+
+    except NoSuchElementException:
+        print("No application button, skipped.")
+        continue
+
+time.sleep(5)
+driver.quit()
