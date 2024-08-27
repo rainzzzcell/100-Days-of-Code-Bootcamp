@@ -1,0 +1,56 @@
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+import time
+
+# Constants
+twitter_url = "https://twitter.com/i/flow/signup"
+promised_down = 150
+promised_up = 10
+chrome_driver_path = ""
+twitter_email = ""
+twitter_password = ""
+
+class InternetSpeedTwitterBot:
+    def __init__(self):
+        self.chrome_options = webdriver.ChromeOptions()
+        self.chrome_options.add_experimental_option("detach", True)
+        self.driver = webdriver.Chrome(options=self.chrome_options)
+        self.down = promised_down
+        self.up = promised_up
+
+    def tweet_at_provider(self):
+        self.driver.get(twitter_url)
+        wait = WebDriverWait(self.driver, 20)  # Wait up to 20 seconds
+
+        try:
+            # Wait for the email input to be available and enter the email
+            email = wait.until(EC.presence_of_element_located((By.NAME, 'text')))
+            email.send_keys(twitter_email)
+            email.send_keys(Keys.ENTER)
+
+            # Wait for the password input to be available and enter the password
+            password = wait.until(EC.presence_of_element_located((By.NAME, 'password')))
+            password.send_keys(twitter_password)
+            password.send_keys(Keys.ENTER)
+
+            # Wait for the tweet button to be available and click it
+            tweet_compose = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, 'div[aria-label="Tweet text"]')))
+            tweet = f"Hey Internet Provider, why is my internet speed {self.down}down/{self.up}up when I pay for {promised_down}down/{promised_up}up?"
+            tweet_compose.send_keys(tweet)
+
+            tweet_button = wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, 'div[data-testid="tweetButton"]')))
+            tweet_button.click()
+
+        except Exception as e:
+            print(f"An error occurred: {e}")
+        finally:
+            time.sleep(5)  # Wait to ensure the tweet is posted before quitting
+            self.driver.quit()
+
+if __name__ == "__main__":
+    bot = InternetSpeedTwitterBot()
+    bot.tweet_at_provider()
