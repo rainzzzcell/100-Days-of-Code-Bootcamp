@@ -1,0 +1,106 @@
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import ElementClickInterceptedException, NoSuchElementException
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+import time
+
+from selenium.webdriver.support.wait import WebDriverWait
+
+insta_url = "https://www.instagram.com/accounts/login/"
+similar_account = "zverev.gleb.5"
+insta_username = ""
+insta_password=""
+
+class InstaFollwer():
+
+    def __init__(self):
+        chrome_options = webdriver.ChromeOptions()
+        chrome_options.add_experimental_option("detach", True)
+        self.driver = webdriver.Chrome(options=chrome_options)
+
+    def login(self):
+        self.driver.get(insta_url)
+
+        try:
+            # Wait for the decline cookies button to appear and then click it
+            decline_cookies_button = WebDriverWait(self.driver, 10).until(
+                EC.element_to_be_clickable(
+                    (By.XPATH, "/html/body/div[6]/div[1]/div/div[2]/div/div/div/div/div[2]/div/button[2]"))
+            )
+            decline_cookies_button.click()
+        except Exception as e:
+            print("No cookies button found or an error occurred:", e)
+
+        try:
+            # Find the username, password fields and login button
+            username = WebDriverWait(self.driver, 10).until(
+                EC.presence_of_element_located((By.NAME, 'username'))
+            )
+            password = self.driver.find_element(By.NAME, "password")
+            enter_button = self.driver.find_element(By.XPATH, '//*[@id="loginForm"]/div/div[3]/button')
+
+            # Input credentials and login
+            username.send_keys(insta_username)
+            password.send_keys(insta_password)
+            time.sleep(2.1)  # Small delay before clicking login
+            enter_button.click()
+        except Exception as e:
+            print("An error occurred during the login process:", e)
+
+
+
+
+
+    def find_followers(self):
+        self.driver.get(f"https://www.instagram.com/{similar_account}/followers")
+
+        try:
+            # Wait for the followers modal to appear
+            modal_xpath = "/html/body/div[6]/div[1]/div/div[2]/div/div/div/div/div[2]/div/div/div[2]"
+            modal = WebDriverWait(self.driver, 10).until(
+                EC.presence_of_element_located((By.XPATH, modal_xpath))
+            )
+
+            # Scroll through the modal to load more followers
+            for i in range(5):
+                self.driver.execute_script("arguments[0].scrollTop = arguments[0].scrollHeight", modal)
+                time.sleep(2)  # Adjust the sleep time if needed for better loading
+
+        except NoSuchElementException:
+            print("Followers modal not found. Make sure the XPATH is correct.")
+        except Exception as e:
+            print(f"An error occurred while finding followers: {e}")
+
+
+    def follow(self):
+        try:
+            # Wait until the follow buttons are loaded
+            all_buttons = WebDriverWait(self.driver, 10).until(
+                EC.presence_of_all_elements_located((By.CSS_SELECTOR, '._aano button'))
+            )
+
+            for button in all_buttons:
+                try:
+                    if button.text == 'Follow':
+                        button.click()
+                        time.sleep(1.1)  # Small delay to mimic human behavior
+
+                except ElementClickInterceptedException:
+                    # Handle the case where clicking the button triggers a dialog
+                    try:
+                        cancel_button = self.driver.find_element(By.XPATH, "//button[contains(text(), 'Cancel')]")
+                        cancel_button.click()
+                    except NoSuchElementException:
+                        print("Cancel button not found.")
+                    time.sleep(1)  # Small delay before continuing
+
+        except NoSuchElementException:
+            print("No follow buttons found. Make sure the CSS selector is correct.")
+        except Exception as e:
+            print(f"An error occurred while following: {e}")
+
+
+bot = InstaFollwer()
+bot.login()
+bot.find_followers()
+bot.follow()
