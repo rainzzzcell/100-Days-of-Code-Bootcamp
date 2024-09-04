@@ -1,0 +1,38 @@
+from flask import Flask
+import random
+
+app = Flask(__name__)
+
+# Generate the correct number once when the app starts
+correct_number = random.randint(0, 9)
+print(f"Correct number (for debugging purposes): {correct_number}")
+
+@app.route('/')
+def starter():
+    # Removed the 'number' parameter as it's not needed for the root route
+    return (
+        "<h1>Guess the right number from 0 to 9</h1>"
+        "<img src='https://media.giphy.com/media/3o7aCSPqXE5C6T8tBC/giphy.gif'/>"
+    )
+
+@app.route('/<int:guess>')
+def guess_number(guess):
+    # Changed the parameter name from 'number' to 'guess' to match the route
+    if guess > correct_number:
+        return (
+            "<h1 style='font-weight: bold;'>Wooow, take it easy, try lower!</h1>"
+            "<img src='https://media.giphy.com/media/3o6ZtaO9BZHcOjmErm/giphy.gif'/>"
+        )
+    elif guess < correct_number:
+        return (
+            "<h1 style='font-weight: bold;'>A little higher, bro.</h1>"
+            "<img src='https://media.giphy.com/media/jD4DwBtqPXRXa/giphy.gif'/>"
+        )
+    else:
+        return (
+            "<h1 style='color: green;'>You found me!</h1>"
+            "<img src='https://media.giphy.com/media/4T7e4DmcrP9du/giphy.gif'/>"
+        )
+
+if __name__ == "__main__":
+    app.run(host='0.0.0.0', port=5000, debug=True)
